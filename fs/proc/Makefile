@@ -28,6 +28,7 @@ proc-y	+= namespaces.o
 proc-y	+= self.o
 proc-y	+= thread_self.o
 proc-$(CONFIG_SCHED_CASIO_POLICY)	+= proc_casio.o
+proc-$(CONFIG_SCHED_SJF_POLICY)		+= proc_sjf.o
 proc-$(CONFIG_PROC_SYSCTL)	+= proc_sysctl.o
 proc-$(CONFIG_NET)		+= proc_net.o
 proc-$(CONFIG_PROC_KCORE)	+= kcore.o

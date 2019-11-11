@@ -173,7 +173,7 @@ static inline int dl_policy(int policy)
 static inline bool valid_policy(int policy)
 {
 	return idle_policy(policy) || fair_policy(policy) ||
-		rt_policy(policy) || dl_policy(policy) || policy == SCHED_CASIO;
+		rt_policy(policy) || dl_policy(policy) || policy == SCHED_CASIO || policy == SCHED_SJF;
 }
 
 static inline int task_has_rt_policy(struct task_struct *p)
@@ -740,6 +740,13 @@ struct casio_rq {
 };
 #endif /* CONFIG_SCHED_CASIO_POLICY */
 
+#ifdef CONFIG_SCHED_SJF_POLICY
+struct sjf_rq {
+	struct rb_root sjf_rb_root;
+	struct list_head sjf_list_head;
+	atomic_t nr_running;
+};
+#endif
 extern struct root_domain def_root_domain;
 extern struct mutex sched_domains_mutex;
 
@@ -795,6 +802,9 @@ struct rq {
 	struct rt_rq		rt;
 	struct dl_rq		dl;
 
+#ifdef CONFIG_SCHED_SJF_POLICY
+	struct sjf_rq		sjf;
+#endif
 #ifdef CONFIG_SCHED_CASIO_POLICY
 	struct casio_rq		casio;
 #endif /* CONFIG_SCHED_CASIO_POLICY */
@@ -1561,7 +1571,7 @@ static inline void set_curr_task(struct rq *rq, struct task_struct *curr)
 	curr->sched_class->set_curr_task(rq);
 }
 
-#define sched_class_highest (&casio_sched_class)
+#define sched_class_highest (&sjf_sched_class)
 #define for_each_class(class) \
    for (class = sched_class_highest; class; class = class->next)
 
@@ -1576,6 +1586,9 @@ extern const struct sched_class casio_sched_class;
 #endif /* CONFIG_SCHED_CASIO_POLICY */
 
 
+#ifdef CONFIG_SCHED_SJF_POLICY
+extern const struct sched_class sjf_sched_class;
+#endif
 #ifdef CONFIG_SMP
 
 extern void update_group_capacity(struct sched_domain *sd, int cpu);
@@ -2069,8 +2082,10 @@ extern void init_rt_rq(struct rt_rq *rt_rq);
 extern void init_dl_rq(struct dl_rq *dl_rq);
 #ifdef CONFIG_SCHED_CASIO_POLICY
 extern void init_casio_rq(struct casio_rq *casio_rq);
-#endif /* CONFIG_SCHED_CASIO_POLICY */
-
+#endif
+#ifdef CONFIG_SCHED_SJF_POLICY
+extern void init_sjf_rq(struct sjf_rq *sjf_rq);
+#endif
 extern void cfs_bandwidth_usage_inc(void);
 extern void cfs_bandwidth_usage_dec(void);
 
@@ -2214,6 +2229,34 @@ static inline unsigned long cpu_util_cfs(struct rq *rq)
 
 
 
+#ifdef  CONFIG_SCHED_SJF_POLICY
+
+#define SJF_MSG_SIZE		400
+#define SJF_MAX_EVENT_LINES	1000
+
+#define SJF_ENQUEUE		1
+#define SJF_DEQUEUE		2
+#define SJF_CONTEXT_SWITCH	3
+#define	SJF_MSG			4
+
+#define SJF_EVENT_CODE(i) ("?EDSM?????"[i])
+
+struct sjf_event{
+	int action;
+	unsigned long long timestamp;
+	char msg_sjf[SJF_MSG_SIZE];
+};
+
+struct sjf_event_log{
+	struct sjf_event sjf_event[SJF_MAX_EVENT_LINES];
+	unsigned long lines;
+	unsigned long cursor;
+};
+
+void init_sjf_event_log(void);
+struct sjf_event_log * get_sjf_event_log(void);
+void register_sjf_event(unsigned long long t,char *m, int a);
+#endif
 #ifdef	CONFIG_SCHED_CASIO_POLICY
 
 /* Rolls its own logging system for events related to CASIO */

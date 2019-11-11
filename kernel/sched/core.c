@@ -3421,6 +3421,9 @@ static void __sched notrace __schedule(bool preempt)
         char msg[CASIO_MSG_SIZE];
 #endif
 
+#ifdef  CONFIG_SCHED_SJF_POLICY
+	char msg_sjf[SJF_MSG_SIZE];
+#endif
 
 	cpu = smp_processor_id();
 	rq = cpu_rq(cpu);
@@ -3496,6 +3499,15 @@ static void __sched notrace __schedule(bool preempt)
         }
 #endif
 
+#ifdef  CONFIG_SCHED_SJF_POLICY
+	if(prev->policy==SCHED_SJF || next->policy==SCHED_SJF){
+		int prev_cid = prev->policy==SCHED_SJF?prev->sjf.sjf_id:-1;
+		int next_cid = next->policy==SCHED_SJF?next->sjf.sjf_id:-1;
+
+		snprintf(msg_sjf,SJF_MSG_SIZE,"prev->(cid%d:pid%d),next->(cid%d:pid%d)",prev_cid,prev->pid,next_cid,next->pid);
+		register_sjf_event(sched_clock(),msg_sjf,SJF_CONTEXT_SWITCH);
+}
+#endif
 	if (likely(prev != next)) {
 		rq->nr_switches++;
 		rq->curr = next;
@@ -4107,6 +4119,15 @@ static void __setscheduler_params(struct task_struct *p,
 
 	p->policy = policy;
 
+	
+	if (policy == SCHED_SJF) {
+		p->sjf.sjf_id = attr->sjf_id;
+		p->sjf.sjf_arr = attr->sjf_arr;
+		p->sjf.sjf_bt = attr->sjf_bt;
+		p->sjf.sjf_wt = attr->sjf_wt;
+		p->sjf.sjf_ft = attr->sjf_ft;
+		p->sjf.sjf_status = attr->sjf_status; 
+	}
 	if (policy == SCHED_CASIO) {
 		p->casio.casio_id = attr->casio_id;
 		p->casio.rel_deadline = attr->casio_deadline;
@@ -4141,8 +4162,10 @@ static void __setscheduler(struct rq *rq, struct task_struct *p,
 		p->prio = rt_effective_prio(p, p->prio);
 
 	if (p->policy == SCHED_CASIO) /* Normally scheduler determined by prio, casio is exception*/
-		p->sched_class = &casio_sched_class;
-	else if (dl_prio(p->prio))
+               p->sched_class = &casio_sched_class;	
+	else if (p->policy == SCHED_SJF)
+               p->sched_class = &sjf_sched_class;
+        else if (dl_prio(p->prio))
 		p->sched_class = &dl_sched_class;
 	else if (rt_prio(p->prio))
 		p->sched_class = &rt_sched_class;
@@ -6051,6 +6074,9 @@ void __init sched_init(void)
 		init_rt_rq(&rq->rt);
 		init_dl_rq(&rq->dl);
 
+#ifdef CONFIG_SCHED_SJF_POLICY
+		init_sjf_rq(&rq->sjf);
+#endif
 #ifdef CONFIG_SCHED_CASIO_POLICY
 		init_casio_rq(&rq->casio);
 #endif /* CONFIG_SCHED_CASIO_POLICY */
@@ -6143,6 +6169,9 @@ void __init sched_init(void)
 
 	init_schedstats();
 
+#ifdef CONFIG_SCHED_SJF_POLICY
+	init_sjf_event_log();
+#endif
 #ifdef CONFIG_SCHED_CASIO_POLICY
 	init_casio_event_log();
 #endif /* CONFIG_SCHED_CASIO_POLICY */

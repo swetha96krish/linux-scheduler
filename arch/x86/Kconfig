@@ -2943,6 +2943,13 @@ config SCHED_CASIO_POLICY
 	default y
 endmenu
 
+menu "SJF scheduler"
+config SCHED_SJF_POLICY
+	bool "enable SJF scheduler"
+	default y
+endmenu
+
+>>>>>>> master
 source "net/Kconfig"
 
 source "drivers/Kconfig"

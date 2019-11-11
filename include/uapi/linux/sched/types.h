@@ -74,6 +74,14 @@ struct sched_attr {
 	/* SCHED_CASIO */
 	__u64 casio_deadline;
 	__u64 casio_id;
+	/* SCHED_SJF */
+	__u64 sjf_id;
+	__u64 sjf_arr;
+	__u64 sjf_bt;
+	__u64 sjf_wt;
+	__u64 sjf_ft;
+	__u64 sjf_status;
+>>>>>>> master
 };
 
 #endif /* _UAPI_LINUX_SCHED_TYPES_H */

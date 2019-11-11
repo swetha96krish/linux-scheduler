@@ -510,6 +510,20 @@ struct sched_casio_entity {
 };
 #endif	/* CONFIG_SCHED_CASIO_POLICY */
 
+#ifdef CONFIG_SCHED_SJF_POLICY
+struct sched_sjf_entity{
+	unsigned int sjf_id;
+	unsigned int sjf_arr;
+	unsigned int sjf_bt;
+	unsigned int sjf_wt;
+	unsigned int sjf_ft;
+	unsigned int sjf_status;
+
+	struct rb_node sjf_rb_node;
+	struct list_head sjf_list_node;
+};
+#endif
+
 struct sched_dl_entity {
 	struct rb_node			rb_node;
 
@@ -660,6 +674,10 @@ struct task_struct {
 	struct sched_casio_entity	casio;
 #endif
 
+#ifdef CONFIG_SCHED_SJF_POLICY
+	struct sched_sjf_entity		sjf;
+#endif
+>>>>>>> master
 #ifdef CONFIG_CGROUP_SCHED
 	struct task_group		*sched_task_group;
 #endif
