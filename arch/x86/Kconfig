@@ -2937,9 +2937,9 @@ config X86_DMA_REMAP
 config HAVE_GENERIC_GUP
 	def_bool y
 
-menu "CASIO schduler"
-config SCHED_CASIO_POLICY
-	bool "enable CASIO scheduler"
+menu "HRRN schduler"
+config SCHED_HRRN_POLICY
+	bool "enable HRRN scheduler"
 	default y
 endmenu
 
