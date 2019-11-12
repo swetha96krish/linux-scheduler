@@ -510,6 +510,16 @@ struct sched_casio_entity {
 };
 #endif	/* CONFIG_SCHED_CASIO_POLICY */
 
+#ifdef CONFIG_SCHED_HRRN_POLICY
+struct sched_hrrn_entity {
+  unsigned int hrrn_id;
+  unsigned long long arrival_time;
+  unsigned long long waiting_time;
+  unsigned long long burst_time;
+  struct rb_node hrrn_rb_node;
+  struct list_head hrrn_list_node;
+};
+#endif
 struct sched_dl_entity {
 	struct rb_node			rb_node;
 
@@ -658,6 +668,10 @@ struct task_struct {
 	struct sched_rt_entity		rt;
 #ifdef CONFIG_SCHED_CASIO_POLICY
 	struct sched_casio_entity	casio;
+#endif
+
+#ifdef CONFIG_SCHED_HRRN_POLICY
+        struct sched_hrrn_entity        hrrn;
 #endif
 
 #ifdef CONFIG_CGROUP_SCHED

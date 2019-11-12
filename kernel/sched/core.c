@@ -4106,8 +4106,12 @@ static void __setscheduler_params(struct task_struct *p,
 		policy = p->policy;
 
 	p->policy = policy;
-
-	if (policy == SCHED_CASIO) {
+        if(policy == SCHED_HRRN) {
+          p->hrrn.hrrn_id = attr->hrrn_id;
+          p->hrrn.arrival_time = sched_clock();
+          p->hrrn.burst_time = attr->hrrn_burst_time;
+        }
+	else if (policy == SCHED_CASIO) {
 		p->casio.casio_id = attr->casio_id;
 		p->casio.rel_deadline = attr->casio_deadline;
 		/* Don't initialize list or rb tree node */
@@ -4140,7 +4144,9 @@ static void __setscheduler(struct rq *rq, struct task_struct *p,
 	if (keep_boost)
 		p->prio = rt_effective_prio(p, p->prio);
 
-	if (p->policy == SCHED_CASIO) /* Normally scheduler determined by prio, casio is exception*/
+        if (p->policy == SCHED_HRRN)
+                p->sched_class = &hrrn_sched_class;   
+	else if (p->policy == SCHED_CASIO) /* Normally scheduler determined by prio, casio is exception*/
 		p->sched_class = &casio_sched_class;
 	else if (dl_prio(p->prio))
 		p->sched_class = &dl_sched_class;
@@ -6054,6 +6060,10 @@ void __init sched_init(void)
 #ifdef CONFIG_SCHED_CASIO_POLICY
 		init_casio_rq(&rq->casio);
 #endif /* CONFIG_SCHED_CASIO_POLICY */
+
+#ifdef CONFIG_SCHED_HRRN_POLICY
+               init_hrrn_rq(&rq->hrrn);
+#endif /* CONFIG_SCHED_HRRN_POLICY */
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
 		root_task_group.shares = ROOT_TASK_GROUP_LOAD;

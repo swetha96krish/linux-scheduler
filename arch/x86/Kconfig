@@ -2943,6 +2943,12 @@ config SCHED_HRRN_POLICY
 	default y
 endmenu
 
+menu "CASIO schduler"
+config SCHED_CASIO_POLICY
+        bool "enable CASIO scheduler"
+        default y
+endmenu
+
 source "net/Kconfig"
 
 source "drivers/Kconfig"

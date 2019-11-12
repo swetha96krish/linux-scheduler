@@ -74,6 +74,9 @@ struct sched_attr {
 	/* SCHED_CASIO */
 	__u64 casio_deadline;
 	__u64 casio_id;
+        /* SCHED_HRRN */
+        __u64 hrrn_id;
+        __u64 hrrn_burst_time;
 };
 
 #endif /* _UAPI_LINUX_SCHED_TYPES_H */

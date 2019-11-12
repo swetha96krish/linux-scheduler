@@ -173,7 +173,7 @@ static inline int dl_policy(int policy)
 static inline bool valid_policy(int policy)
 {
 	return idle_policy(policy) || fair_policy(policy) ||
-		rt_policy(policy) || dl_policy(policy) || policy == SCHED_CASIO;
+		rt_policy(policy) || dl_policy(policy) || policy == SCHED_CASIO || policy == SCHED_HRRN;
 }
 
 static inline int task_has_rt_policy(struct task_struct *p)
@@ -731,6 +731,13 @@ struct root_domain {
 };
 
 
+#ifdef CONFIG_SCHED_HRRN_POLICY
+struct hrrn_rq {
+	struct rb_root hrrn_rb_root;
+	struct list_head hrrn_list_head;
+	atomic_t nr_running;
+};
+#endif
 
 #ifdef CONFIG_SCHED_CASIO_POLICY
 struct casio_rq {
@@ -797,6 +804,10 @@ struct rq {
 
 #ifdef CONFIG_SCHED_CASIO_POLICY
 	struct casio_rq		casio;
+#endif /* CONFIG_SCHED_CASIO_POLICY */
+
+#ifdef CONFIG_SCHED_HRRN_POLICY
+        struct hrrn_rq         hrrn;
 #endif /* CONFIG_SCHED_CASIO_POLICY */
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
@@ -1561,7 +1572,7 @@ static inline void set_curr_task(struct rq *rq, struct task_struct *curr)
 	curr->sched_class->set_curr_task(rq);
 }
 
-#define sched_class_highest (&casio_sched_class)
+#define sched_class_highest (&hrrn_sched_class)
 #define for_each_class(class) \
    for (class = sched_class_highest; class; class = class->next)
 
@@ -1575,6 +1586,9 @@ extern const struct sched_class idle_sched_class;
 extern const struct sched_class casio_sched_class;
 #endif /* CONFIG_SCHED_CASIO_POLICY */
 
+#ifdef CONFIG_SCHED_HRRN_POLICY
+extern const struct sched_class hrrn_sched_class;
+#endif /* CONFIG_SCHED_HRRN_POLICY */
 
 #ifdef CONFIG_SMP
 
@@ -2069,6 +2083,10 @@ extern void init_rt_rq(struct rt_rq *rt_rq);
 extern void init_dl_rq(struct dl_rq *dl_rq);
 #ifdef CONFIG_SCHED_CASIO_POLICY
 extern void init_casio_rq(struct casio_rq *casio_rq);
+#endif /* CONFIG_SCHED_CASIO_POLICY */
+
+#ifdef CONFIG_SCHED_CASIO_POLICY
+extern void init_hrrn_rq(struct hrrn_rq *hrrn_rq);
 #endif /* CONFIG_SCHED_CASIO_POLICY */
 
 extern void cfs_bandwidth_usage_inc(void);
