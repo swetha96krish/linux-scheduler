@@ -3,7 +3,7 @@
  *
  *  Core kernel scheduler code and related syscalls
  *
- *  Copyright (C) 1991-2002  Linus Torvalds
+  Copyright (C) 1991-2002  Linus Torvalds
  */
 #include "sched.h"
 
@@ -4120,11 +4120,8 @@ static void __setscheduler_params(struct task_struct *p,
 	
 	if (policy == SCHED_SJF) {
 		p->sjf.sjf_id = attr->sjf_id;
-		p->sjf.sjf_arr = attr->sjf_arr;
 		p->sjf.sjf_bt = attr->sjf_bt;
-		p->sjf.sjf_wt = attr->sjf_wt;
-		p->sjf.sjf_ft = attr->sjf_ft;
-		p->sjf.sjf_status = attr->sjf_status; 
+		p->sjf.sjf_prio = attr->sjf_prio; 
 	}
 	if (policy == SCHED_CASIO) {
 		p->casio.casio_id = attr->casio_id;
@@ -4204,6 +4201,7 @@ static int __sched_setscheduler(struct task_struct *p,
 	/* The pi code expects interrupts enabled */
 	BUG_ON(pi && in_interrupt());
 recheck:
+	printk(KERN_ALERT "entering recheck\n");
 	/* Double check policy once rq lock held: */
 	if (policy < 0) {
 		reset_on_fork = p->sched_reset_on_fork;
@@ -4215,6 +4213,7 @@ recheck:
 			return -EINVAL;
 	}
 
+	printk(KERN_ALERT "entering recheck 1\n");
 	if (attr->sched_flags & ~(SCHED_FLAG_ALL | SCHED_FLAG_SUGOV))
 		return -EINVAL;
 
@@ -4223,9 +4222,13 @@ recheck:
 	 * 1..MAX_USER_RT_PRIO-1, valid priority for SCHED_NORMAL,
 	 * SCHED_BATCH and SCHED_IDLE is 0.
 	 */
+
+	printk(KERN_ALERT "entering recheck 2\n");
 	if ((p->mm && attr->sched_priority > MAX_USER_RT_PRIO-1) ||
 	    (!p->mm && attr->sched_priority > MAX_RT_PRIO-1))
 		return -EINVAL;
+
+	printk(KERN_ALERT "entering recheck 3\n");
 	if ((dl_policy(policy) && !__checkparam_dl(attr)) ||
 	    (rt_policy(policy) != (attr->sched_priority != 0)))
 		return -EINVAL;
@@ -4233,21 +4236,25 @@ recheck:
 	/*
 	 * Allow unprivileged RT tasks to decrease priority:
 	 */
+	printk(KERN_ALERT "entering recheck 4\n");
 	if (user && !capable(CAP_SYS_NICE)) {
 		if (fair_policy(policy)) {
 			if (attr->sched_nice < task_nice(p) &&
 			    !can_nice(p, attr->sched_nice))
 				return -EPERM;
 		}
-
+	
+	printk(KERN_ALERT "entering recheck 5\n");
 		if (rt_policy(policy)) {
 			unsigned long rlim_rtprio =
 					task_rlimit(p, RLIMIT_RTPRIO);
 
+	printk(KERN_ALERT "entering recheck 6\n");
 			/* Can't set/change the rt policy: */
 			if (policy != p->policy && !rlim_rtprio)
 				return -EPERM;
 
+	printk(KERN_ALERT "entering recheck 7\n");
 			/* Can't increase priority: */
 			if (attr->sched_priority > p->rt_priority &&
 			    attr->sched_priority > rlim_rtprio)
@@ -4260,6 +4267,8 @@ recheck:
 		  * unprivileged DL tasks to increase their relative deadline
 		  * or reduce their runtime (both ways reducing utilization)
 		  */
+
+	printk(KERN_ALERT "entering recheck 9\n");
 		if (dl_policy(policy))
 			return -EPERM;
 
@@ -4267,6 +4276,8 @@ recheck:
 		 * Treat SCHED_IDLE as nice 20. Only allow a switch to
 		 * SCHED_NORMAL if the RLIMIT_NICE would normally permit it.
 		 */
+
+	printk(KERN_ALERT "entering recheck 10\n");
 		if (idle_policy(p->policy) && !idle_policy(policy)) {
 			if (!can_nice(p, task_nice(p)))
 				return -EPERM;
@@ -4398,6 +4409,7 @@ change:
 	if (running)
 		put_prev_task(rq, p);
 
+	printk(KERN_ALERT "entering __setsched \n");
 	prev_class = p->sched_class;
 	__setscheduler(rq, p, attr, pi);
 
@@ -6073,7 +6085,7 @@ void __init sched_init(void)
 		init_dl_rq(&rq->dl);
 
 #ifdef CONFIG_SCHED_SJF_POLICY
-		init_sjf_rq(&rq->sjf);
+		init_sjf_rq(rq->sjf);
 #endif
 #ifdef CONFIG_SCHED_CASIO_POLICY
 		init_casio_rq(&rq->casio);

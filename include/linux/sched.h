@@ -513,11 +513,8 @@ struct sched_casio_entity {
 #ifdef CONFIG_SCHED_SJF_POLICY
 struct sched_sjf_entity{
 	unsigned int sjf_id;
-	unsigned int sjf_arr;
 	unsigned int sjf_bt;
-	unsigned int sjf_wt;
-	unsigned int sjf_ft;
-	unsigned int sjf_status;
+	unsigned int sjf_prio;
 
 	struct rb_node sjf_rb_node;
 	struct list_head sjf_list_node;

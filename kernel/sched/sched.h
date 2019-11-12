@@ -803,7 +803,7 @@ struct rq {
 	struct dl_rq		dl;
 
 #ifdef CONFIG_SCHED_SJF_POLICY
-	struct sjf_rq		sjf;
+	struct sjf_rq		sjf[5];
 #endif
 #ifdef CONFIG_SCHED_CASIO_POLICY
 	struct casio_rq		casio;
