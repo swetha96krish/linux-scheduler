@@ -56,6 +56,7 @@ void insert_sjf_task_rb_tree(struct sjf_rq *rq, struct sched_sjf_entity *p)
 	node=&rq[p->sjf_prio].sjf_rb_root.rb_node;
 	while(*node!=NULL){
 		parent=*node;
+		printk("Node created\n");
 		entry=rb_entry(parent, struct sched_sjf_entity,sjf_rb_node);
 		if(entry){
 			if( p->sjf_bt < entry->sjf_bt){
@@ -109,7 +110,7 @@ static void enqueue_task_sjf(struct rq *rq, struct task_struct *p, int flags)
 {
 	struct sched_sjf_entity *ce;
 	char msg_sjf[SJF_MSG_SIZE];
-
+	printk("entering enqueue\n");
 	if(p){
 		ce=&(p->sjf);
 
@@ -213,14 +214,10 @@ static void switched_from_sjf(struct rq *rq, struct task_struct *p) { }
 
 const struct sched_class sjf_sched_class = {
 /* old sched_class_highest was set to these in kernel/sched/sched.h */
-#ifdef CONFIG_SCHED_CASIO_POLICY
-	.next 			= &casio_sched_class,
-#else
 #ifdef CONFIG_SMP
-	.next 			= &dl_sched_class,
-#else
 	.next 			= &stop_sched_class,
-#endif
+#else
+	.next 			= &dl_sched_class,
 #endif
 	.enqueue_task		= enqueue_task_sjf,
 	.dequeue_task		= dequeue_task_sjf,

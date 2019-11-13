@@ -71,9 +71,6 @@ struct sched_attr {
 	__u64 sched_deadline;
 	__u64 sched_period;
 
-	/* SCHED_CASIO */
-	__u64 casio_deadline;
-	__u64 casio_id;
 	/* SCHED_SJF */
 	__u64 sjf_id;
 	__u64 sjf_bt;

@@ -2937,12 +2937,6 @@ config X86_DMA_REMAP
 config HAVE_GENERIC_GUP
 	def_bool y
 
-menu "CASIO schduler"
-config SCHED_CASIO_POLICY
-	bool "enable CASIO scheduler"
-	default y
-endmenu
-
 menu "SJF scheduler"
 config SCHED_SJF_POLICY
 	bool "enable SJF scheduler"

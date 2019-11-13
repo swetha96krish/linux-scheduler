@@ -18,7 +18,6 @@ endif
 
 obj-y += core.o loadavg.o clock.o cputime.o
 obj-y += idle.o fair.o rt.o deadline.o
-obj-y += sched_casio.o
 obj-y += sched_sjf.o
 obj-y += wait.o wait_bit.o swait.o completion.o
 
